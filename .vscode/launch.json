@@ -12,5 +12,16 @@
             "console": "integratedTerminal",
             "justMyCode": true
         }
+        // {
+        //     "name": "Python: Current File",
+        //     "type": "python",
+        //     "request": "launch",
+        //     "program": "./setup.py",
+        //     "console": "integratedTerminal",
+        //     "justMyCode": true,
+        //     "args": [
+        //         "build_ext",
+        //     ]
+        // }
     ]
 }
