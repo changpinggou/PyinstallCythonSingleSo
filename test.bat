@@ -8,4 +8,5 @@ del %current_dir%\build /S /Q
 python setup.py build_ext
 xcopy %current_dir%\build\lib.win-amd64-3.8\foo %current_dir%\foo /S /E /Q /Y /I
 
+git reset --hard HEAD
 pause
