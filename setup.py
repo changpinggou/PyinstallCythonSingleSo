@@ -2,6 +2,7 @@ import os
 from setuptools import setup, find_packages, Extension
 from Cython.Build import cythonize
 import shutil
+import platform
 
 CUR_FILE_DIR = os.path.dirname(os.path.abspath(__file__))
 print(f"CUR_FILE_DIR = {CUR_FILE_DIR}")
@@ -18,25 +19,31 @@ except Exception as e:
 
 
 need_compile_modules = ["foo"]
-need_compile_modules_map ={}
+exclude_compile_files = ["test_sub_3.py"]
 
-def findAllFile(base,need_compile_list):
+need_compile_modules_map ={}
+need_mkdir_list = []
+
+def findAllFile(base,need_compile_list, module_name):
     for root, ds, fs in os.walk(base):
         for f in fs:
             ext = os.path.splitext(f)[-1]
             filename = os.path.splitext(f)[0]
 
-            if ext == '.py' and filename !="__init__":
+            if ext == '.py' and filename !="__init__" and (f not in exclude_compile_files):
                 full_path = os.path.join(root, f)
                 need_compile_list.append(full_path)
+        for d in ds:
+            if d !='__pycache__':
+                full_path = os.path.join(root, d)
+                need_mkdir_list.append(full_path)
 
 
 for item in need_compile_modules:
     compile_list = []
     real_dir = os.path.join(CUR_FILE_DIR, item)
-    findAllFile(real_dir, compile_list)
+    findAllFile(real_dir, compile_list, item)
     need_compile_modules_map[item] = compile_list
-
 
 need_compile_extensions = []
 for key in need_compile_modules_map:
@@ -46,6 +53,14 @@ for key in need_compile_modules_map:
     )
 
     need_compile_extensions.append(extension)
+
+# sourcefiles2 = ['foo/foo_sub_src/__init__.py']
+# extension2=Extension(
+#             name="foo.bootstrap",
+#             sources = sourcefiles2,
+#     )
+    
+# need_compile_extensions.append(extension2)
 
 all_compile_extensions_tuple= tuple(i for i in need_compile_extensions)
 
@@ -70,18 +85,32 @@ kwargs = {
  
 setup(**kwargs)
 
-try:
-    linux_build_temp_dir = os.path.join(build_dir, 'lib.linux-x86_64-cpython-38')
-    linux_build_new_dir = os.path.join(build_dir, 'temp')
-    win_build_temp_dir = os.path.join(build_dir, 'lib.win-amd64-3.8')
-    win_build_new_dir = os.path.join(build_dir, 'temp')
-    if os.path.exists(linux_build_temp_dir):
-        os.rename(linux_build_temp_dir, linux_build_new_dir)
-    if os.path.exists(win_build_temp_dir):
-        os.rename(win_build_temp_dir, win_build_new_dir)
-except Exception as e:
-    print(f"os.rename={linux_build_temp_dir}->{linux_build_new_dir} exception={str(e)}")
-    print(f"os.rename={win_build_temp_dir}->{win_build_new_dir} exception={str(e)}")
+build_out_dir = None
+build_new_out_dir = None
+if platform.system()=='Windows':
+    build_out_dir = os.path.join(build_dir, 'lib.win-amd64-3.8')
+else:
+    build_out_dir = os.path.join(build_dir, 'lib.linux-x86_64-cpython-38')
+
+build_new_out_dir = os.path.join(build_dir, 'temp')
+
+
+for item in need_compile_modules:
+    real_dir = os.path.join(CUR_FILE_DIR, item)
+    init_py_path = os.path.join(real_dir, "__init__.py")
+    dst_dir = os.path.join(build_out_dir, item, "__init__.py")
+    shutil.copyfile(init_py_path, dst_dir)
+
+if os.path.exists(build_out_dir):
+    os.rename(build_out_dir, build_new_out_dir)
+
+for item in need_mkdir_list:
+    module_init_src_py = os.path.join(item, "__init__.py")
+    x = item.replace(CUR_FILE_DIR, build_new_out_dir)
+    if not os.path.exists(x):
+        os.makedirs(x)
+    module_init_dst_py = os.path.join(x, "__init__.py")
+    shutil.copyfile(module_init_src_py, module_init_dst_py)
 
 for key in need_compile_modules_map:
     for item in need_compile_modules_map[key]:

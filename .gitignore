@@ -1,4 +1,5 @@
 # Byte-compiled / optimized / DLL files
+foo_test
 __pycache__/
 *.py[cod]
 *.c
