@@ -19,23 +19,48 @@ except Exception as e:
 
 
 need_compile_modules = ["foo"]
-exclude_compile_files = ["test_sub_3.py"]
+exclude_compile_files = ["foo\\foo_sub_src\\sub_3\\test_sub_3.py"]
+exclude_compile_dir = ["foo\\foo_sub_src\\sub_4"]
 
 need_compile_modules_map ={}
 need_mkdir_list = []
 
+def dirInExcludeList(full_path):
+    for item in exclude_compile_dir:
+        if item in full_path:
+            return True
+    return False
+
+def fileInExcludeList(full_path):
+    for item in exclude_compile_files:
+        if item in full_path:
+            return True
+    return False
+
 def findAllFile(base,need_compile_list, module_name):
     for root, ds, fs in os.walk(base):
         for f in fs:
+            if dirInExcludeList(root):
+                print(f"{root} in Exclude dir list, exit file tranverse")
+                break
+
             ext = os.path.splitext(f)[-1]
             filename = os.path.splitext(f)[0]
+            full_path = os.path.join(root, f)
+            exclude_file = fileInExcludeList(full_path)
+            if exclude_file:
+                print(f"{full_path} in Exclude file list")
 
-            if ext == '.py' and filename !="__init__" and (f not in exclude_compile_files):
-                full_path = os.path.join(root, f)
+            if ext == '.py' and filename !="__init__" and not exclude_file:
                 need_compile_list.append(full_path)
         for d in ds:
-            if d !='__pycache__':
-                full_path = os.path.join(root, d)
+            full_path = os.path.join(root, d)
+            exclude_dir = dirInExcludeList(full_path)
+
+            if exclude_dir:
+                print(f"{full_path} in Exclude dir list")
+
+            if d !='__pycache__' and not exclude_dir:
                 need_mkdir_list.append(full_path)
 
 
