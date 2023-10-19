@@ -6,7 +6,7 @@ pip install pyinstaller==5.13.2 --index-url https://pypi.tuna.tsinghua.edu.cn/si
 cd /d %~dp0
 python setup.py build_ext
 
-pyinstaller -D --exclude-module tensorflow  --noconfirm test.py   --hidden-import importlib --add-data "./build/temp;."
+pyinstaller -D --exclude-module tensorflow  --noconfirm test.py   --hidden-import importlib --hidden-import easydict --add-data "./build/temp;."
 
 
 git reset --hard HEAD
