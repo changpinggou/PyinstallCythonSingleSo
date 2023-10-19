@@ -19,7 +19,8 @@ except Exception as e:
 
 
 need_compile_modules = ["foo"]
-exclude_compile_files = ["foo\\foo_sub_src\\sub_3\\test_sub_3.py"]
+# exclude_compile_files = ["foo\\foo_sub_src\\sub_3\\test_sub_3.py"]
+exclude_compile_files = []
 exclude_compile_dir = ["foo\\foo_sub_src\\sub_4"]
 
 need_compile_modules_map ={}
